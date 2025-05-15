@@ -26,6 +26,8 @@ class EnsureAuthenticated
                 return redirect()->route('login');
             }
 
+            auth()->setUser($user);
+            
             return $next($request);
 
         } catch (TokenExpiredException $e) {
@@ -38,6 +40,8 @@ class EnsureAuthenticated
             try {
                 $newAccessToken = JWTAuth::setToken($refreshToken)->refresh();
                 $user = JWTAuth::setToken($newAccessToken)->authenticate();
+
+                auth()->setUser($user);
 
                 // Attach new access token as cookie
                 return $next($request)->withCookie(
