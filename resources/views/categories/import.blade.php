@@ -26,6 +26,7 @@
             <label for="file" class="form-label">CSV File</label>
             <input type="file" name="file" class="form-control" accept=".csv,.txt" required>
             <small class="form-text text-muted">Make sure the CSV has headers: <code>name,parent_name</code></small>
+            <small class="form-text text-muted">Sample file download: <a href="{{ asset('file/sample.csv') }}" download>sample.csv</a></small>
         </div>
 
         <button type="submit" class="btn btn-primary">Import</button>

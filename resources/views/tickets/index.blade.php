@@ -12,7 +12,7 @@
         <div class="alert alert-danger">{{ $errors->first() }}</div>
     @endif
 
-    <a href='{{ route('tickets.seed') }}' class="btn btn-primary mb-4">Add Tickets</a>
+    <a href='{{ route('tickets.seed') }}' class="btn btn-primary mb-4">Add 100 Sample Tickets</a>
 
     <table class="table">
         <thead>
