@@ -1,61 +1,50 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+Security Measures:
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+-JWT Authentication with Refresh Tokens:
+Used tymon/jwt-auth for token-based authentication. Access and refresh tokens are stored securely in HttpOnly cookies to prevent XSS.
 
-## About Laravel
+-CSRF Protection:
+In Laravel, CSRF is mitigated for web routes by default. Laravel’s CSRF middleware ensures tokens are tied to user sessions.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+-Rate Limiting & Brute-force Protection:
+Using Laravel’s Rate Limitingauthentication routes were constricted to limited amount of login attempts and after going over the limit, it protect against brute-force attacks.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+-SQL Injection Prevention:
+A mixed approach of using laravel eloquent and DB statements is used. Raw SQL queries are avoided. When DB facade is used (instead of Eloquent), parameter binding is used in all queries. And whether it be eloquent or DB statements, both are using prepared statements to reduce the risk of SQL injection.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+-Secure File Uploads:
+Patient file uploads are restricted to PDFs using server-side MIME type validation and stored using Laravel’s Storage with file name sanitization.
 
-## Learning Laravel
+-Input Validation (Form Requests):
+Form Requests are used to centralize input validation and prevent malicious data from entering the system.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+-Audit Logging (GDPR-compliant):
+All critical model events are logged in the Activity log tab in the sidebar. Logs include description, user-causer ID, timestamps, and old/new data states.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+-Role-based Password Policy:
+In the Registration page, context-aware password validation implemented between the roles of admin and user. stronger passwords for admins (for e.g. min length=10) and different policies for regular users (for e.g. min length=6).
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Performance Optimization Strategy:
 
-## Laravel Sponsors
+-Eager Loading & Pagination [NOTE: Category Model was not paginated to test for large dataset loadtimes and redis caching]
+Avoided N+1 issues with eager loading of related data. All large dataset outputs (like Patients) are paginated. 
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+-Redis Caching
+Frequently accessed API endpoints or endpoints with possible large data (e.g., category listing) are cached using Redis via Laravel's Cache::remember().
 
-### Premium Partners
+-Optimized CSV Import
+Used chunked reading and DB::insert() batching for efficient bulk CSV import of categories, ensuring memory-safe handling of 50,000+ rows.
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development/)**
-- **[Active Logic](https://activelogic.com)**
+-Database locking strategy (Optimistic Locking)
+Implemented Optimistic Locking (in the ticket module) as it satisfies multiple requirements like concurrency, preventing race conditions,etc. Applied for concurrency safety using the updated_at field, preventing conflicting edits in highly concurrent environments.
 
-## Contributing
+Pattern Implementation Justifications
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+-Repository Pattern
+Business logic is separated from controllers. DB interactions are abstracted into repositories to promote reusability, testability, and security.
 
-## Code of Conduct
+-Service Layer
+Services encapsulate logic that orchestrates operations from multiple repositories or performs business rules (e.g., PatientService).
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Audit Logging (Observer Pattern)
+Logs are triggered automatically using Laravel observers and the Spatie logging package.
