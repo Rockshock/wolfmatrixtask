@@ -63,8 +63,17 @@ class CategoryController extends Controller
     {
         $deletedByUserId = $request->user()->id ?? null; // Get user id if authenticated
 
-        Category::findOrFail($id)->delete($deletedByUserId);
+        $category = Category::findOrFail($id);
 
+        CategoryDeletion::create([
+            'category_id' => $id,
+            'name'  => $category->name,
+            'path'  =>  $category->path,
+            'deleted_by' => $deletedByUserId,
+            'deleted_at' => now(),
+        ]);
+        
+        $category->delete($deletedByUserId);
         Cache::forget('categories_index');
 
         return response()->json(['message' => 'Deleted']);
